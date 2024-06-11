@@ -29,7 +29,7 @@ def produce_trades(
         while True:
             trades: List[Dict] = kraken_api.get_trades()
             for trade in trades:
-                message = topic.serialize(key=trade["symbol"], value=trade)
+                message = topic.serialize(key=trade["product_id"], value=trade)
 
                 producer.produce(
                     topic=topic.name,

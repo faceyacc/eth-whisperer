@@ -61,4 +61,16 @@ class KrakenWebsocketTradeAPI:
 
         msg = json.loads(msg)
 
-        return msg['data']
+
+        # Structure trade from message data.
+        trades = []
+        for trade in msg['data']:
+            trades.append({
+                'product_id': self.product_id,
+                'price': trade['price'],
+                'volume': trade['qty'],
+                'timestamp': trade['timestamp']
+            })
+
+
+        return trades
