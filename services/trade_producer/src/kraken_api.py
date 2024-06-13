@@ -1,6 +1,9 @@
-from typing import List, Dict
-from websocket import create_connection
 import json
+from typing import Dict, List
+
+from loguru import logger
+from websocket import create_connection
+
 
 class KrakenWebsocketTradeAPI:
     URL = 'wss://ws.kraken.com/v2'
@@ -10,13 +13,10 @@ class KrakenWebsocketTradeAPI:
 
         # Establish connection to Kraken Websocket.
         self._ws = create_connection(url=self.URL)
-        print("connection to Kraken successful!")
+        logger.info('connection to Kraken successful!')
 
         # Subscribe to trades.
         self._subscribe(product_id=product_id)
-
-
-
 
     def _subscribe(self, product_id) -> None:
         """
@@ -31,27 +31,18 @@ class KrakenWebsocketTradeAPI:
         """
 
         # Subscribe to Kraken trades
-        print("subscribing to trades...")
+        logger.info('subscribing to trades...')
         msg = {
-            "method": "subscribe",
-            "params": {
-                "channel": "trade",
-                "symbol": [
-                    product_id
-                ],
-                "snapshot": False
-            }
+            'method': 'subscribe',
+            'params': {'channel': 'trade', 'symbol': [product_id], 'snapshot': False},
         }
 
         self._ws.send(json.dumps(msg))
-        print("subscription worked!")
-
+        logger.info('subscription worked!')
 
         # Dumping first two messages from Kraken.
         _ = self._ws.recv()
         _ = self._ws.recv()
-
-
 
     def get_trades(self) -> List[Dict]:
         msg = self._ws.recv()
@@ -61,16 +52,16 @@ class KrakenWebsocketTradeAPI:
 
         msg = json.loads(msg)
 
-
         # Structure trade from message data.
         trades = []
         for trade in msg['data']:
-            trades.append({
-                'product_id': self.product_id,
-                'price': trade['price'],
-                'volume': trade['qty'],
-                'timestamp': trade['timestamp']
-            })
-
+            trades.append(
+                {
+                    'product_id': self.product_id,
+                    'price': trade['price'],
+                    'volume': trade['qty'],
+                    'timestamp': trade['timestamp'],
+                }
+            )
 
         return trades

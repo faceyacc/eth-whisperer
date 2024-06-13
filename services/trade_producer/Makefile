@@ -3,3 +3,9 @@ build:
 
 run: build
 	docker run --network=redpanda_network trade_producer
+
+lint:
+	poetry run ruff check --fix
+
+format:
+	poetry run ruff format
