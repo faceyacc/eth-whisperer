@@ -4,7 +4,7 @@ from loguru import logger
 from quixstreams import Application
 
 from src.kraken_api import KrakenWebsocketTradeAPI
-from src import config
+from src.producer_config import config
 
 
 def produce_trades(
@@ -27,7 +27,7 @@ def produce_trades(
     topic = app.topic(name=kafka_topic_name, value_serializer='json')
 
     # Create kraken api instance.
-    kraken_api = KrakenWebsocketTradeAPI(product_id=config.product_id)
+    kraken_api = KrakenWebsocketTradeAPI(product_id=product_id)
 
     logger.info('Creating producer...')
 
