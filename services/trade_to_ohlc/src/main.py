@@ -4,6 +4,35 @@ from src.ohlc_config import config
 from quixstreams import message_context
 from datetime import timedelta
 
+def init_ohlc_candle(value: dict) -> dict:
+    """
+    Initalize the OHLC candle with first trade
+    """
+    return {
+        "open":value["price"],
+        "high":value["price"],
+        "low": value["price"],
+        "close": value["price"],
+        "product_id": value["product_id"],
+    }
+
+def update_ohlc_candle(ohlc_candle: dict, trade: dict) -> dict:
+    """
+    Update OHLC candle with new trade and return it
+
+    Args:
+        ohlc_candle (dict): The current OHLC candle.
+        trade: dict (dict): The incoming trade.
+    Returns:
+        dict: The updated candle.
+    """
+    return {
+        "open":ohlc_candle["open"],
+        "high": max(ohlc_candle["high"], trade["price"]),
+        "low": min(ohlc_candle["low"], trade["price"]),
+        "close": trade["price"],
+        "product_id": trade["product_id"],
+    }
 
 def trade_to_ohlc(
     kafka_input_topic: str,
@@ -47,11 +76,24 @@ def trade_to_ohlc(
     sdf = (
         sdf.tumbling_window(duration_ms=timedelta(seconds=ohlc_window_seconds))
         .reduce(reducer=update_ohlc_candle, initializer=init_ohlc_candle)
+        .final()
 
     )
 
+    # Unpack keys to get values
+    sdf["open"] = sdf["value"]["open"]
+    sdf["high"] = sdf["value"]["high"]
+    sdf["low"] = sdf["value"]["low"]
+    sdf['close'] = sdf['value']['close']
+    sdf["product_id"] = sdf["value"]["product_id"]
+    sdf['timestamp'] = sdf["end"]
+
+    # Extract crucial keys to give to Redpanda
+    sdf = sdf[["timestamp", "open", "high", "low", "close", "product_id"]]
+
     sdf = sdf.update(logger.info)
 
+    # Write data to output topic
     sdf = sdf.to_topic(output_topic)
 
     # Run pipeline
