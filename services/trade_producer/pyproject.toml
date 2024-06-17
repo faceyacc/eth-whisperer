@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "src"
 version = "0.1.0"
-description = ""
+description = "Microservice to store trades in feature store."
 authors = ["faceyacc <justfacey@gmail.com>"]
 readme = "README.md"
 
