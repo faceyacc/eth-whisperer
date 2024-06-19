@@ -41,20 +41,14 @@ def kafka_to_feature_store(
             elif msg.error():
                 logger.error(f'Consumer error: {msg.error()}')
                 continue
+            else:
+                ohlc = json.loads(msg.value())
+                data_to_feature_store(
+                    feature_group_name=feature_group_name,
+                    feature_group_version=feature_group_version,
+                    data=ohlc,
+                )
 
-            ohlc = json.loads(msg.value())
-
-            data_to_feature_store(
-                feature_group_name=feature_group_name,
-                feature_group_version=feature_group_version,
-                data=ohlc,
-            )
-
-            # Store the offset of the processed message on the Consumer
-            # for the auto-commit mechanism.
-            # It will send it to Kafka in the background.
-            # Storing offset only after the message is processed enables at-least-once delivery
-            # guarantees.
             consumer.store_offsets(message=msg)
 
 
