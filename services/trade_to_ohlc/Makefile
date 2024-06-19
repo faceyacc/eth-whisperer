@@ -3,9 +3,9 @@ build:
 
 run: build
 	docker run \
-	--network=redpanda_network \
-	--env KAFKA_BROKER_ADDRESS=redpanda-0:9092 \
-	trade_to_ohlc
+    	--network=redpanda_network \
+    	--env KAFKA_BROKER_ADDRESS=redpanda-0:9092 \
+    	trade_to_ohlc
 
 lint:
 	poetry run ruff check --fix

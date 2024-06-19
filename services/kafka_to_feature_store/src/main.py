@@ -26,7 +26,8 @@ def kafka_to_feature_store(
         None
     """
     app = Application(
-        broker_address=kafka_broker_address, consumer_group='kafka_to_feature_store'
+        broker_address=kafka_broker_address,
+        consumer_group='kafka_to_feature_store',
     )
 
     # Create a consumer to read from the Kafka topic
@@ -49,9 +50,6 @@ def kafka_to_feature_store(
                 data=ohlc,
             )
 
-            # breakpoint()
-
-
             # Store the offset of the processed message on the Consumer
             # for the auto-commit mechanism.
             # It will send it to Kafka in the background.
@@ -61,10 +59,9 @@ def kafka_to_feature_store(
 
 
 if __name__ == '__main__':
-    # TODO: load these values from a config.py file
     kafka_to_feature_store(
         kafka_topic=config.kafka_topic,
-        kafka_broker_address=config.local_kafka_broker_addr,
+        kafka_broker_address=config.kafka_broker_address,
         feature_group_name=config.feature_group_name,
         feature_group_version=config.feature_group_version,
     )

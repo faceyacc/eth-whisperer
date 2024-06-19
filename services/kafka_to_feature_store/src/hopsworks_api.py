@@ -36,11 +36,9 @@ def data_to_feature_store(
         online_enabled=True,
     )
 
-
     # breakpoint()
 
     # Transform the data into a DataFrame
     data = pd.DataFrame([data])
 
-
-    ohlc_feature_group.insert(data) # type: ignore
+    ohlc_feature_group.insert(data)  # type: ignore

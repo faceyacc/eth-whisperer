@@ -9,12 +9,12 @@ load_dotenv(find_dotenv())
 class Config(BaseSettings):
     # ohlc_window_seconds: int = int(os.environ["OHLC_WINDOW_SECONDS"])
 
-    kafka_topic: str = os.environ['KAFKA_TOPIC']
-    local_kafka_broker_addr: str = os.environ['LOCAL_KAFKA_BROKER_ADDR']
-    hopsworks_project_name: str = os.environ['HOPSWORKS_PROJECT_NAME']
+    kafka_topic: str = 'ohlc'
+    kafka_broker_address: str = 'localhost:9092'
+    hopsworks_project_name: str = 'eth_whisperer'
     hopsworks_api_key: str = os.environ['HOPSWORKS_KEY']
-    feature_group_name: str = os.environ['FEATURE_GROUP_NAME']
-    feature_group_version: int = int(os.environ['FEATURE_GROUP_VERSION'])
+    feature_group_name: str = 'ohlc_feature_group'
+    feature_group_version: int = 1
 
 
 config = Config()
