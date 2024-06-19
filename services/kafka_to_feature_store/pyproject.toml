@@ -1,17 +1,18 @@
 [tool.poetry]
 name = "src"
 version = "0.1.0"
-description = "Microservice to transform raw trade data to OHLC format."
+description = ""
 authors = ["faceyacc <justfacey@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.10"
-quixstreams = "^2.5.1"
-python-dotenv = "^1.0.1"
-pydantic-settings = "^2.3.3"
-loguru = "^0.7.2"
+python = ">=3.10,<3.13"
 ruff = "^0.4.9"
+quixstreams = "^2.5.1"
+loguru = "^0.7.2"
+pydantic-settings = "^2.3.3"
+python-dotenv = "^1.0.1"
+hopsworks = "^3.7.0"
 
 
 [build-system]

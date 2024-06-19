@@ -1,0 +1,10 @@
+1. create a new poetry project (make sure your using pyenv to initialize project and be sure to use --name src)
+2. create .env file with hopsworks api key
+3. create makefile for ease of linting (add ruff before doing this).
+4. create a main.py file that will:
+    "read in data from the trade_to_ohlc topic and store it in the feature store" (this is called a "consumer")
+5. create func kafka_to_feature_store(kafka_topic, kafka_broker_address, feature_group_name, feature group version)
+   that reads in topic and stores it in hopsworks
+6. turn data kafka data to dict
+7. defind a function save_data_to_feature_store (in a seperate file) that reads in the data from the kafka topic and stores it in the feature store:
+    -

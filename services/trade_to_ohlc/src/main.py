@@ -23,7 +23,7 @@ def update_ohlc_candle(ohlc_candle: dict, trade: dict) -> dict:
 
     Args:
         ohlc_candle (dict): The current OHLC candle.
-        trade: dict (dict): The incoming trade.
+        trade (dict): The incoming trade.
     Returns:
         dict: The updated candle.
     """
