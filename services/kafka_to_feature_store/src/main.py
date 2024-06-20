@@ -43,6 +43,8 @@ def kafka_to_feature_store(
                 continue
             else:
                 ohlc = json.loads(msg.value())
+
+                # Write the OHLC data to the feature store in Hopsworks
                 data_to_feature_store(
                     feature_group_name=feature_group_name,
                     feature_group_version=feature_group_version,

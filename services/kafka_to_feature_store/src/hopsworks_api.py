@@ -1,8 +1,9 @@
 import hopsworks
-from src.feature_store_config import config
 import pandas as pd
 
+from src.feature_store_config import config
 
+# Hopsworks API call to write data to the feature store
 def data_to_feature_store(
     feature_group_name: str, feature_group_version: int, data
 ) -> None:
