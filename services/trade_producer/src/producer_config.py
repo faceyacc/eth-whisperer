@@ -2,12 +2,12 @@ import os
 from dotenv import load_dotenv, find_dotenv
 from pydantic_settings import BaseSettings
 
-load_dotenv(find_dotenv())
+load_dotenv(find_dotenv(usecwd=True))
 
 class Config(BaseSettings):
-    product_id: str = 'ETH/EUR'
-    kafka_broker_address: str = os.environ['KAFKA_BROKER_ADDRESS']
-    kafka_topic_name: str = 'trade'
+    product_id: str
+    kafka_broker_address: str
+    kafka_topic_name: str
 
 
-config = Config()
+config = Config() # pyright: ignore

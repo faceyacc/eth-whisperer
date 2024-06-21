@@ -42,7 +42,7 @@ def kafka_to_feature_store(
                 logger.error(f'Consumer error: {msg.error()}')
                 continue
             else:
-                ohlc = json.loads(msg.value())
+                ohlc = json.loads(msg.value().decode('utf-8'))
 
                 # Write the OHLC data to the feature store in Hopsworks
                 data_to_feature_store(

@@ -8,3 +8,7 @@ start-feature-pipeline:
 
 stop-feature-pipeline:
 	docker compose -f feature_pipeline.yml down -v
+
+run: start-redpanda start-feature-pipeline
+
+stop: stop-feature-pipeline stop-redpanda

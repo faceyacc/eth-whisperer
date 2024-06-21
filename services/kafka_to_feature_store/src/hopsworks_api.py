@@ -1,5 +1,8 @@
 import hopsworks
 import pandas as pd
+from loguru import logger
+import time
+from hsfs.client.exceptions import RestAPIError
 
 from src.feature_store_config import config
 
@@ -36,8 +39,6 @@ def data_to_feature_store(
         event_time='timestamp',
         online_enabled=True,
     )
-
-    # breakpoint()
 
     # Transform the data into a DataFrame
     data = pd.DataFrame([data])
