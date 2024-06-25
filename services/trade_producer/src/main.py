@@ -41,8 +41,8 @@ def produce_trades(
         kraken_api = KrakenWebsocketTradeAPI(product_id=product_id)
     else:
         # get current timestamp in milliseconds
-        from_timestamp = int(time.time() * 1000)
-        to_timestamp = from_timestamp - (last_n_days * 24 * 60 * 60 * 1000)
+        to_timestamp = int(time.time() * 1000) #to_timestamp
+        from_timestamp = to_timestamp - (last_n_days * 24 * 60 * 60 * 1000)
 
         kraken_api = KrakenRestAPI(
             pairs=product_id,
@@ -68,7 +68,7 @@ def produce_trades(
 
                 logger.info(f'trade => {trade}')
 
-            from time import sleep
+
 
 
 

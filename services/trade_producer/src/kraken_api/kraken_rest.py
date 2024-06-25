@@ -1,10 +1,11 @@
 from typing import Dict, List
 
+import json
 import requests
+from loguru import logger
 
 
 class KrakenRestAPI:
-    # URL = 'https://api.kraken.com/0/public/Trades'
 
     def __init__(
         self,
@@ -28,7 +29,8 @@ class KrakenRestAPI:
         self.to_timestamp = to_timestamp
 
         #TODO: chnage this to get multiple pairs.
-        self.URL = f'https://api.kraken.com/0/public/Trades?pair={pairs[0]}&since{from_timestamp}'
+        self.URL = f'https://api.kraken.com/0/public/Trades?pair={self.pairs[0]}&since={self.from_timestamp // 1000}' # covert from_timestamp to seconds
+        self.is_done = False
 
     def get_trades(self) -> List[Dict]:
         """
@@ -45,14 +47,37 @@ class KrakenRestAPI:
 
         payload = {}
         headers = {'Accept': 'application/json'}
-
         response = requests.request('GET', self.URL, headers=headers, data=payload)
 
-        print(response.text)
+        response = json.loads(response.text)
 
-        breakpoint()
+        # check for errors in Kraken API response
+        if response['error'] != []:
+            raise Exception(response['error'])
 
-        return []
+        # get price, volume, and timestamp from response
+        trades = [
+            {
+                'price': float(trade[0]),
+                'volume': float(trade[1]),
+                'timestamp': int(trade[2]),
+                'product_id': self.pairs[0],
+            }
+            for trade in response['result'][self.pairs[0]]
+        ]
+
+
+        last_timestamp = int(response['result']['last']) // 1_000_000 # convert nanoseconds to milliseconds
+        if last_timestamp >= self.to_timestamp:
+            self.is_done = True
+
+        logger.info(f'feteched {len(trades)} trades from Kraken API.')
+
+        logger.info(f'last timestamp: {last_timestamp}')
+
+        print(self.from_timestamp)
+
+        return trades
 
     def done(self) -> bool:
         # TODO: this is just a placeholder for now. Change this to return True when done getting historical data.
