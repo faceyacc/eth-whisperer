@@ -1,14 +1,14 @@
+from typing import List
+
 import hopsworks
 import pandas as pd
-from loguru import logger
-import time
-from hsfs.client.exceptions import RestAPIError
 
 from src.feature_store_config import config
 
+
 # Hopsworks API call to write data to the feature store
 def data_to_feature_store(
-    feature_group_name: str, feature_group_version: int, data
+    feature_group_name: str, feature_group_version: int, data: List[dict]
 ) -> None:
     """
     Writes data to the Hopsworks feature store
@@ -16,7 +16,7 @@ def data_to_feature_store(
     Args:
         feature_group_name (str): Name of the feature group to write to
         feature_group_version (int): Version of the feature group to write to
-        data (dict): Data to write to the feature group
+        data (List[dict]): Data to write to the feature group
 
     Returns:
         None
@@ -40,7 +40,9 @@ def data_to_feature_store(
         online_enabled=True,
     )
 
+    # breakpoint()
+
     # Transform the data into a DataFrame
-    data = pd.DataFrame([data])
+    data = pd.DataFrame(data)  # type: ignore
 
     ohlc_feature_group.insert(data)  # type: ignore

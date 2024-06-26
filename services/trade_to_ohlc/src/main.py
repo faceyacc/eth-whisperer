@@ -1,7 +1,9 @@
-from quixstreams import Application
-from loguru import logger
-from src.ohlc_config import config
 from datetime import timedelta
+
+from loguru import logger
+from quixstreams import Application
+
+from src.ohlc_config import config
 
 
 def init_ohlc_candle(value: dict) -> dict:
@@ -61,12 +63,12 @@ def trade_to_ohlc(
     app = Application(
         broker_address=kafka_broker_addr,
         consumer_group='trade_to_ohlc',
-        auto_offset_reset='earliest',
+        auto_offset_reset='latest',
     )
 
     # Define input and output topics
-    output_topic = app.topic(name=kafka_output_topic, value_serializer='json')
     input_topic = app.topic(name=kafka_input_topic, value_serializer='json')
+    output_topic = app.topic(name=kafka_output_topic, value_serializer='json')
 
     # Create StreamingDataFrame to apply transformations
     sdf = app.dataframe(input_topic)
@@ -94,6 +96,7 @@ def trade_to_ohlc(
     # Write data to output topic
     sdf = sdf.to_topic(output_topic)
 
+    # breakpoint()
     # Run pipeline
     app.run(sdf)
 
@@ -102,6 +105,6 @@ if __name__ == '__main__':
     trade_to_ohlc(
         kafka_output_topic=config.kafka_output_topic,
         kafka_input_topic=config.kafka_input_topic,
-        kafka_broker_addr=config.kafka_broker_addr,
+        kafka_broker_addr=config.kafka_broker_address,
         ohlc_window_seconds=config.ohlc_window_seconds,
     )

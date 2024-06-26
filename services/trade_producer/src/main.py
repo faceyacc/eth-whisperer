@@ -6,7 +6,6 @@ from quixstreams import Application
 
 from src.kraken_api.kraken_rest import KrakenRestAPI
 from src.kraken_api.websocket import KrakenWebsocketTradeAPI
-
 from src.producer_config import config
 
 
@@ -36,18 +35,15 @@ def produce_trades(
     topic = app.topic(name=kafka_topic_name, value_serializer='json')
 
     # Create kraken api instance.
-
     if live_or_historical == 'live':
         kraken_api = KrakenWebsocketTradeAPI(product_id=product_id)
     else:
         # get current timestamp in milliseconds
-        to_timestamp = int(time.time() * 1000) #to_timestamp
+        to_timestamp = int(time.time() * 1000)  # to_timestamp
         from_timestamp = to_timestamp - (last_n_days * 24 * 60 * 60 * 1000)
 
         kraken_api = KrakenRestAPI(
-            pairs=product_id,
-            from_timestamp=from_timestamp,
-            to_timestamp=to_timestamp
+            pairs=product_id, from_timestamp=from_timestamp, to_timestamp=to_timestamp
         )
 
     logger.info('Creating producer...')
@@ -69,15 +65,11 @@ def produce_trades(
                 logger.info(f'trade => {trade}')
 
 
-
-
-
 if __name__ == '__main__':
     produce_trades(
         kafka_broker_address=config.kafka_broker_address,
         kafka_topic_name=config.kafka_topic_name,
         product_id=config.product_id,
-
         # The type of data to get from Kraken API (live or historical)
         live_or_historical=config.live_or_historical,
         last_n_days=config.last_n_days,

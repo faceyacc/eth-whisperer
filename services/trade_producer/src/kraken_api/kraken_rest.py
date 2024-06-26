@@ -1,12 +1,11 @@
+import json
 from typing import Dict, List
 
-import json
 import requests
 from loguru import logger
 
 
 class KrakenRestAPI:
-
     def __init__(
         self,
         pairs: List[str],
@@ -28,8 +27,8 @@ class KrakenRestAPI:
         self.from_timestamp = from_timestamp
         self.to_timestamp = to_timestamp
 
-        #TODO: chnage this to get multiple pairs.
-        self.URL = f'https://api.kraken.com/0/public/Trades?pair={self.pairs[0]}&since={self.from_timestamp // 1000}' # covert from_timestamp to seconds
+        # TODO: chnage this to get multiple pairs.
+        self.URL = f'https://api.kraken.com/0/public/Trades?pair={self.pairs[0]}&since={self.from_timestamp // 1000}'  # covert from_timestamp to seconds
         self.is_done = False
 
     def get_trades(self) -> List[Dict]:
@@ -66,8 +65,9 @@ class KrakenRestAPI:
             for trade in response['result'][self.pairs[0]]
         ]
 
-
-        last_timestamp = int(response['result']['last']) // 1_000_000 # convert nanoseconds to milliseconds
+        last_timestamp = (
+            int(response['result']['last']) // 1_000_000
+        )  # convert nanoseconds to milliseconds
         if last_timestamp >= self.to_timestamp:
             self.is_done = True
 

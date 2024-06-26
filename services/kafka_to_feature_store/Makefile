@@ -1,6 +1,8 @@
+run-dev:
+	poetry run python src/main.py
+
 build:
 	docker build -t kafka_to_fs .
-
 
 run: build
 	docker run \

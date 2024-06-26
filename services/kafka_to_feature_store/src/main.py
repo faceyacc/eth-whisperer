@@ -12,6 +12,7 @@ def kafka_to_feature_store(
     kafka_broker_address: str,
     feature_group_name: str,
     feature_group_version: int,
+    buffer_size: int,
 ):
     """
     Reads OHLC data from Kafka topic and writes it to the Hopsworks feature store
@@ -21,6 +22,7 @@ def kafka_to_feature_store(
         kafka_broker_address (str): Kafka broker address
         feature_group_name (str): Name of the feature group to write to
         feature_group_version (int): Version of the feature group to write to
+        buffer_size (int): Number of messages to buffer before writing to the feature store
 
     Returns:
         None
@@ -29,6 +31,9 @@ def kafka_to_feature_store(
         broker_address=kafka_broker_address,
         consumer_group='kafka_to_feature_store',
     )
+
+    # buffer to push ohlc data to feature store in batches
+    buffer = []
 
     # Create a consumer to read from the Kafka topic
     with app.get_consumer() as consumer:
@@ -44,20 +49,32 @@ def kafka_to_feature_store(
             else:
                 ohlc = json.loads(msg.value().decode('utf-8'))
 
-                # Write the OHLC data to the feature store in Hopsworks
-                data_to_feature_store(
-                    feature_group_name=feature_group_name,
-                    feature_group_version=feature_group_version,
-                    data=ohlc,
-                )
+                buffer.append(ohlc)
+
+                # breakpoint()
+                if len(buffer) >= buffer_size:
+                    # Write the OHLC data to the feature store in Hopsworks
+                    data_to_feature_store(
+                        feature_group_name=feature_group_name,
+                        feature_group_version=feature_group_version,
+                        data=buffer,
+                    )
+
+            # Reset the buffer
+            buffer = []
 
             consumer.store_offsets(message=msg)
 
 
 if __name__ == '__main__':
-    kafka_to_feature_store(
-        kafka_topic=config.kafka_topic,
-        kafka_broker_address=config.kafka_broker_address,
-        feature_group_name=config.feature_group_name,
-        feature_group_version=config.feature_group_version,
-    )
+    # Catch KeyboardInterrupt to exit gracefully
+    try:
+        kafka_to_feature_store(
+            kafka_topic=config.kafka_topic,
+            kafka_broker_address=config.kafka_broker_address,
+            feature_group_name=config.feature_group_name,
+            feature_group_version=config.feature_group_version,
+            buffer_size=config.buffer_size,
+        )
+    except KeyboardInterrupt:
+        logger.info('Exiting kafka_to_feature_store...')
