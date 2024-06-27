@@ -38,6 +38,7 @@ def data_to_feature_store(
         primary_key=['product_id', 'timestamp'],
         event_time='timestamp',
         online_enabled=True,
+        stream=True,
     )
 
     # breakpoint()

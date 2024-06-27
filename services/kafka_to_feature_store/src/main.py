@@ -30,6 +30,7 @@ def kafka_to_feature_store(
     app = Application(
         broker_address=kafka_broker_address,
         consumer_group='kafka_to_feature_store',
+        auto_offset_reset='earliest',
     )
 
     # buffer to push ohlc data to feature store in batches
@@ -51,8 +52,7 @@ def kafka_to_feature_store(
 
                 buffer.append(ohlc)
 
-                # breakpoint()
-                if len(buffer) >= buffer_size:
+                if len(buffer) >= buffer_size: # TODO: handle edge case where last batch is not full (i.e. buffer_size)
                     # Write the OHLC data to the feature store in Hopsworks
                     data_to_feature_store(
                         feature_group_name=feature_group_name,
@@ -60,13 +60,15 @@ def kafka_to_feature_store(
                         data=buffer,
                     )
 
-            # Reset the buffer
-            buffer = []
+                    # Reset the buffer
+                    buffer = []
 
             consumer.store_offsets(message=msg)
 
 
+
 if __name__ == '__main__':
+    logger.debug(config.model_dump())
     # Catch KeyboardInterrupt to exit gracefully
     try:
         kafka_to_feature_store(
