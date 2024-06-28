@@ -1,4 +1,3 @@
-import time
 from typing import Dict, List
 
 from loguru import logger
@@ -38,12 +37,21 @@ def produce_trades(
     if live_or_historical == 'live':
         kraken_api = KrakenWebsocketTradeAPI(product_id=product_id)
     else:
-        # get current timestamp in milliseconds
-        to_timestamp = int(time.time() * 1000)  # to_timestamp
-        from_timestamp = to_timestamp - (last_n_days * 24 * 60 * 60 * 1000)
+        from datetime import datetime, timezone
+
+        today_date = datetime.now(timezone.utc).replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
+
+        # today_date to milliseconds
+        to_timestamp = int(today_date.timestamp() * 1000)
+
+        # from_ms is last_n_days ago from today, so
+        from_timestamp = to_timestamp - last_n_days * 24 * 60 * 60 * 1000
 
         kraken_api = KrakenRestAPI(
-            pairs=product_id, from_timestamp=from_timestamp, to_timestamp=to_timestamp
+            pairs=product_id,
+            last_n_days=last_n_days,
         )
 
     logger.info('Creating producer...')
@@ -52,7 +60,7 @@ def produce_trades(
     with app.get_producer() as producer:
         while True:
             # check if we are done getting historical data
-            if kraken_api is KrakenRestAPI and kraken_api.done():
+            if isinstance(kraken_api, KrakenRestAPI) and kraken_api.done():
                 logger.info('Done getting historical data.')
                 break
 

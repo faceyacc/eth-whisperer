@@ -1,6 +1,6 @@
 import json
-from typing import Dict, List
-
+from typing import Dict, List, Tuple
+from datetime import datetime, timezone
 import requests
 from loguru import logger
 
@@ -9,36 +9,35 @@ class KrakenRestAPI:
     def __init__(
         self,
         pairs: List[str],
-        from_timestamp: int,
-        to_timestamp: int,
+        last_n_days: int,
     ) -> None:
         """
         Initializes Kraken REST API.
 
         Args:
             pairs (List[str]): List of trade pairs to get trades from.
-            from_timestamp (int): The timestamp (in milliseconds) to start getting trades from.
-            to_timestamp (int): The timestamp (in milliseconds) to stop getting trades from.
+            last_n_days (int): The number of days to get historical data.
 
         Returns:
             None
         """
         self.pairs = pairs
-        self.from_timestamp = from_timestamp
-        self.to_timestamp = to_timestamp
+        self.from_timestamp, self.to_timestamp = self._dateTime(last_n_days)
+
+        logger.debug(
+            f'Initializing Kraken REST API with pairs: {pairs} and timestamps: {self.from_timestamp} - {self.to_timestamp}.'
+        )
 
         # TODO: chnage this to get multiple pairs.
-        self.URL = f'https://api.kraken.com/0/public/Trades?pair={self.pairs[0]}&since={self.from_timestamp // 1000}'  # covert from_timestamp to seconds
-        self.is_done = False
+        self.URL = (
+            'https://api.kraken.com/0/public/Trades?pair={product_id}&since={since_sec}'
+        )
+        self._is_done = False
+        self.last_trade_ms = self.from_timestamp
 
     def get_trades(self) -> List[Dict]:
         """
         Gets trade pairs from Kraken REST API and returns them as a list of dictionaries.
-
-        Args:
-            pairs (List[str]): List of trade pairs to get trades from.
-            from_timestamp (int): The timestamp to start getting trades from.
-            to_timestamp (int): The timestamp to stop getting trades from.
 
         Returns:
             List[Dict]: List of trades.
@@ -46,7 +45,11 @@ class KrakenRestAPI:
 
         payload = {}
         headers = {'Accept': 'application/json'}
-        response = requests.request('GET', self.URL, headers=headers, data=payload)
+
+        since_sec = self.last_trade_ms // 1000  # convert milliseconds to seconds
+        url = self.URL.format(product_id=self.pairs[0], since_sec=since_sec)
+
+        response = requests.request('GET', url, headers=headers, data=payload)
 
         response = json.loads(response.text)
 
@@ -65,20 +68,35 @@ class KrakenRestAPI:
             for trade in response['result'][self.pairs[0]]
         ]
 
-        last_timestamp = (
-            int(response['result']['last']) // 1_000_000
-        )  # convert nanoseconds to milliseconds
-        if last_timestamp >= self.to_timestamp:
-            self.is_done = True
+        # filter trades that are outside the timestamp range
+        trades = [
+            trade for trade in trades if trade['timestamp'] <= self.to_timestamp // 1000
+        ]
+
+        last_timestamp_ns = int(response['result']['last'])
+
+        # Update last trade timestamp to the last trade timestamp in the response
+        self.last_trade_ms = last_timestamp_ns // 1_000_000
+        self._is_done = self.last_trade_ms >= self.to_timestamp
 
         logger.info(f'fetched {len(trades)} trades from Kraken API.')
-
-        logger.info(f'last timestamp: {last_timestamp}')
-
-        print(self.from_timestamp)
+        logger.info(f'last timestamp: {self.last_trade_ms}')
 
         return trades
 
     def done(self) -> bool:
         # TODO: this is just a placeholder for now. Change this to return True when done getting historical data.
-        return False
+        return self._is_done
+
+    @staticmethod
+    def _dateTime(last_n_days) -> Tuple[int, int]:
+        today_date = datetime.now(timezone.utc).replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
+
+        # today_date to milliseconds
+        to_timestamp = int(today_date.timestamp() * 1000)
+
+        # from_ms is last_n_days ago from today, so
+        from_timestamp = to_timestamp - last_n_days * 24 * 60 * 60 * 1000
+        return (from_timestamp, to_timestamp)

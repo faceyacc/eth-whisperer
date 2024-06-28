@@ -1,21 +1,12 @@
-Fix trade_to_ohlc: currently this services is not reading in historical data from
-trade_producer. I suspect the issue is with the 'auto_offset_reset' parameter.
-
-
-
-Storing historical data to feature store
-1. Add a param from config called "buffer_size" (int)
-   to the feature store configuration. This will be
-   the number of historical data points read from kafka topic and stores
-   in the feature store.
-2. Add param to .env file. Set to 1000. default to 1 if not set.
-3. Create a buffer variable (list) and push ohlc data to buffer var.
-4. When buffer size is reached, push data to feature store.
-5. Reset buffer to empty list.
-6. Allow data_to_feature_store to be call with a List[dict] for data. (pd.DataFrame(data))
-7. Add write_options "start_offline_materialization: False" to feature store configuration.
-
-
 Challenge:
 1. Handle case where last batch is not full in buffer, but no
    more data is coming in.
+
+
+1.Refactor code to allow KrakenRestAPI to only
+  take 'last_n_days' as an argument, and move logic
+  for converting time to the kraken_api.py file.
+2. Inside the kraken_api.py file, add a helper function (private static method)
+   to convert time to the format required by the Kraken API. Return
+   timestamps as a tuple.
+3. Initalizae 'to' and 'from' timestamp to this helper function

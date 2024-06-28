@@ -19,7 +19,7 @@ class Config(BaseSettings):
     # The type of data to get from Kraken API (live or historical)
     # live_or_historical: Literal['live', 'historical']
     live_or_historical: str = 'live'
-    last_n_days: int = 10
+    last_n_days: int = 3
 
 
 config = Config()  # pyright: ignore
