@@ -50,6 +50,9 @@ def kafka_to_feature_store(
             else:
                 ohlc = json.loads(msg.value().decode('utf-8'))
 
+                # TODO: temporary logging to see the data. To be removed in production.
+                logger.info(f'Received OHLC data: {ohlc} | size: {len(buffer)}')
+
                 buffer.append(ohlc)
 
                 if len(buffer) >= buffer_size: # TODO: handle edge case where last batch is not full (i.e. buffer_size)

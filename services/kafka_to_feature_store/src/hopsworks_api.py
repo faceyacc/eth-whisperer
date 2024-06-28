@@ -38,12 +38,10 @@ def data_to_feature_store(
         primary_key=['product_id', 'timestamp'],
         event_time='timestamp',
         online_enabled=True,
-        stream=True,
+        # stream=True,
     )
-
-    # breakpoint()
 
     # Transform the data into a DataFrame
     data = pd.DataFrame(data)  # type: ignore
 
-    ohlc_feature_group.insert(data)  # type: ignore
+    ohlc_feature_group.insert(data, write_options={"start_offline_materialization": False})  # type: ignore

@@ -24,7 +24,7 @@ services:
     build: ../services/trade_to_ohlc
     environment:
       KAFKA_BROKER_ADDRESS: redpanda-0:9092
-      OHLC_WINDOW_SECONDS: 60
+      OHLC_WINDOW_SECONDS: 1
     networks:
       - redpanda_network
 

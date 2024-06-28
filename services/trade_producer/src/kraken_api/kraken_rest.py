@@ -71,7 +71,7 @@ class KrakenRestAPI:
         if last_timestamp >= self.to_timestamp:
             self.is_done = True
 
-        logger.info(f'feteched {len(trades)} trades from Kraken API.')
+        logger.info(f'fetched {len(trades)} trades from Kraken API.')
 
         logger.info(f'last timestamp: {last_timestamp}')
 
