@@ -3,7 +3,7 @@ from typing import Dict, List
 from loguru import logger
 from quixstreams import Application
 
-from src.kraken_api.kraken_rest import KrakenRestAPI
+from src.kraken_api.kraken_rest import KrakenRestAPI, KrakenRestMultiplePairs
 from src.kraken_api.websocket import KrakenWebsocketTradeAPI
 from src.producer_config import config
 
@@ -37,19 +37,7 @@ def produce_trades(
     if live_or_historical == 'live':
         kraken_api = KrakenWebsocketTradeAPI(product_id=product_id)
     else:
-        from datetime import datetime, timezone
-
-        today_date = datetime.now(timezone.utc).replace(
-            hour=0, minute=0, second=0, microsecond=0
-        )
-
-        # today_date to milliseconds
-        to_timestamp = int(today_date.timestamp() * 1000)
-
-        # from_ms is last_n_days ago from today, so
-        from_timestamp = to_timestamp - last_n_days * 24 * 60 * 60 * 1000
-
-        kraken_api = KrakenRestAPI(
+        kraken_api = KrakenRestMultiplePairs(
             pairs=product_id,
             last_n_days=last_n_days,
         )
@@ -60,11 +48,12 @@ def produce_trades(
     with app.get_producer() as producer:
         while True:
             # check if we are done getting historical data
-            if isinstance(kraken_api, KrakenRestAPI) and kraken_api.done():
+            if isinstance(kraken_api, KrakenRestMultiplePairs) and kraken_api.is_done():
                 logger.info('Done getting historical data.')
                 break
 
             trades: List[Dict] = kraken_api.get_trades()
+
             for trade in trades:
                 message = topic.serialize(key=trade['product_id'], value=trade)
 
