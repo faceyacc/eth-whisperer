@@ -63,7 +63,7 @@ def kafka_to_feature_store(
                         feature_group_name=feature_group_name,
                         feature_group_version=feature_group_version,
                         data=buffer,
-                        online_or_offline=live_or_historical,
+                        online_or_offline= 'online' if live_or_historical == 'live' else 'offline',
                     )
 
                     # Reset the buffer

@@ -51,7 +51,6 @@ def data_to_feature_store(
         data,
         write_options= {  # type: ignore
             'start_offline_materialization': True
-            if online_or_offline == 'historical'
-            else False
+            if online_or_offline == 'offline' else False
         },
     )
