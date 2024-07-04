@@ -1,4 +1,5 @@
 import json
+from typing import Optional
 
 from loguru import logger
 from quixstreams import Application
@@ -12,7 +13,8 @@ def kafka_to_feature_store(
     kafka_broker_address: str,
     feature_group_name: str,
     feature_group_version: int,
-    buffer_size: int,
+    buffer_size: Optional[int],
+    live_or_historical,
 ):
     """
     Reads OHLC data from Kafka topic and writes it to the Hopsworks feature store
@@ -22,7 +24,8 @@ def kafka_to_feature_store(
         kafka_broker_address (str): Kafka broker address
         feature_group_name (str): Name of the feature group to write to
         feature_group_version (int): Version of the feature group to write to
-        buffer_size (int): Number of messages to buffer before writing to the feature store
+        buffer_size (intL optional): Number of messages to buffer before writing to the feature store
+        live_or_historical (str): The type of data to write to the feature store.
 
     Returns:
         None
@@ -54,20 +57,19 @@ def kafka_to_feature_store(
                 logger.info(f'Received OHLC data: {ohlc} | size: {len(buffer)}')
 
                 buffer.append(ohlc)
-
-                if len(buffer) >= buffer_size: # TODO: handle edge case where last batch is not full (i.e. buffer_size)
+                if buffer_size is not None and len(buffer) >= buffer_size:
                     # Write the OHLC data to the feature store in Hopsworks
                     data_to_feature_store(
                         feature_group_name=feature_group_name,
                         feature_group_version=feature_group_version,
                         data=buffer,
+                        online_or_offline=live_or_historical,
                     )
 
                     # Reset the buffer
                     buffer = []
 
             consumer.store_offsets(message=msg)
-
 
 
 if __name__ == '__main__':
@@ -80,6 +82,7 @@ if __name__ == '__main__':
             feature_group_name=config.feature_group_name,
             feature_group_version=config.feature_group_version,
             buffer_size=config.buffer_size,
+            live_or_historical=config.live_or_historical,
         )
     except KeyboardInterrupt:
         logger.info('Exiting kafka_to_feature_store...')

@@ -19,6 +19,7 @@ class Config(BaseSettings):
     feature_group_name: str
     feature_group_version: int
     buffer_size: int = 1
+    live_or_historical: str = 'live'
 
 
 # Load configuration from environment variables
